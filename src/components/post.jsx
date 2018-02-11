@@ -1,14 +1,27 @@
 import { Component, h } from "preact";
+import File from "./file";
 
 export default class Post extends Component {
-  render({ post, matches, preview }, state) {
+  constructor(props) {
+    super(props);
+
+    this.toggleReplies = () => {
+      this.setState((prevState, props) => ({
+        visibile: !prevState.visibile
+      }));
+    };
+  }
+
+  componentDidMount() {
+    this.setState({
+      visibile: false
+    });
+  }
+
+  render({ post, matches, preview }, { visibile }) {
     let title = post.title;
     if (preview && !title) {
       title = "View Thread";
-    }
-    let image = "";
-    if (post.file) {
-      image = <img src={post.file.link} alt={post.file.name} />;
     }
     const body = { __html: post.body };
 
@@ -30,8 +43,13 @@ export default class Post extends Component {
             <span class="time">Created on {post.time.created.toString()}</span>
           </div>
         </div>
-        {image}
+        <div class="files">{post.files.map(file => <File file={file} />)}</div>
         <div class="body" dangerouslySetInnerHTML={body} />
+
+        <a onClick={this.toggleReplies}>{post.replies.length} Replies</a>
+        <div class="replies" style={`display:${visibile ? "block" : "none"}`}>
+          {post.replies.map(post => <Post post={post} matches={matches} />)}
+        </div>
       </div>
     );
   }
