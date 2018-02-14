@@ -46,7 +46,7 @@ export default class Post extends Component {
         <div class="files">{post.files.map(file => <File file={file} />)}</div>
         <div class="body" dangerouslySetInnerHTML={body} />
 
-        <a onClick={this.toggleReplies}>{post.replies.length} Replies</a>
+        <a class="replies-toggle" onClick={this.toggleReplies}>{post.replies.length} Replies</a>
         <div class="replies" style={`display:${visibile ? "block" : "none"}`}>
           {post.replies.map(post => <Post post={post} matches={matches} />)}
         </div>
