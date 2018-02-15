@@ -40,6 +40,10 @@ a {
   margin-bottom: 2%;
 }
 
+.post .replies-toggle {
+  user-select: none;
+}
+
 .replies {
   margin-top: 2%;
 }
@@ -64,6 +68,10 @@ a {
 
 .post .author {
   font-weight: 700;
+}
+
+.post .author .id {
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .post .meta {

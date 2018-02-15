@@ -22,7 +22,8 @@ const postParser = post => {
     id: post.id
   };
 
-  let mentions = base.body.match(/&gt;&gt;\d+/gi);
+  // All unique mentions
+  const mentions = [...new Set(base.body.match(/&gt;&gt;\d+/gi))];
   if (mentions) {
     base.mentions = mentions.map(mention => parseInt(mention.match(/\d+/)[0]));
   }
@@ -57,24 +58,27 @@ export const getCatalog = async board => {
 
 export const getThread = async (board, threadID) => {
   const { posts } = await getJSON(`8ch.net/${board}/res/${threadID}.json`);
-  const array = posts.map(postParser);
+  const thread = posts.map(postParser);
   const hash = {};
-  array.forEach(post => (hash[post.no] = post));
-  const thread = [];
+  thread.forEach(post => (hash[post.no] = post));
 
-  array.forEach(post => {
+  // Iterate through all posts in the thread.
+  // If a post is a reply to any other posts in this thread,
+  // move it to the posts it replies to, then remove from the top thread level.
+  thread.forEach((post, i) => {
+    let isReply = false;
+
     post.mentions.forEach(mention => {
       if (mention in hash) {
         hash[mention].replies.push(post);
+        isReply = true;
       }
     });
-  });
 
-  array.forEach(post => {
-    if (!post.mentions.length) {
-      thread.push(post);
+    if (isReply) {
+      delete thread[i];
     }
   });
 
-  return thread;
+  return thread.filter(post => post !== undefined);
 };

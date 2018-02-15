@@ -23,7 +23,17 @@ export default class Post extends Component {
     if (preview && !title) {
       title = "View Thread";
     }
+    const idStyle = `background-color:#${post.id};color:#${post.id
+      .match(/../g)
+      .map(hex => (255 - parseInt(hex, 16)).toString(16))
+      .join("")}`;
     const body = { __html: post.body };
+    let replyText = `${post.replies.length} Replies`;
+    if (!post.replies.length) {
+      replyText = "No Replies";
+    } else if (post.replies.length === 1) {
+      replyText = "1 Reply";
+    }
 
     return (
       <div class="post">
@@ -36,7 +46,9 @@ export default class Post extends Component {
           <div class="author">
             <span class="name">{post.author.name}</span>
             <span class="trip">{post.author.trip || ""} </span>
-            <span class="id">id:{post.id || ""}</span>
+            <span class="id" style={idStyle}>
+              id:{post.id || ""}
+            </span>
           </div>
           <div class="meta">
             <span class="number">Post #{post.no} </span>
@@ -46,7 +58,9 @@ export default class Post extends Component {
         <div class="files">{post.files.map(file => <File file={file} />)}</div>
         <div class="body" dangerouslySetInnerHTML={body} />
 
-        <a class="replies-toggle" onClick={this.toggleReplies}>{post.replies.length} Replies</a>
+        <a class="replies-toggle" onClick={this.toggleReplies}>
+          {replyText}
+        </a>
         <div class="replies" style={`display:${visibile ? "block" : "none"}`}>
           {post.replies.map(post => <Post post={post} matches={matches} />)}
         </div>
