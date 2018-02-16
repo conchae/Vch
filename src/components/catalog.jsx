@@ -16,26 +16,34 @@ export default class Catalog extends Component {
   }
 
   async componentDidMount() {
-    const catalog = await getCatalog(this.props.board);
-    this.setState({
-      catalog,
-      loadLimit: 10
-    });
+    if (this.props.site === "4" || this.props.site === "8") {
+      const catalog = await getCatalog(this.props.site, this.props.board);
+      this.setState({
+        catalog,
+        loadLimit: 10
+      });
 
-    addEventListener("scroll", this.scrollListener);
+      addEventListener("scroll", this.scrollListener);
+    }
   }
 
   componentWillUnmount() {
     removeEventListener("scroll", this.scrollListener);
   }
 
-  render({ board, matches }, { catalog = [], loadLimit }) {
+  render({ site, board, matches }, { catalog = [], loadLimit }) {
+    if (site !== "4" && site !== "8") {
+      return <h1>Site "{site}" is not supported</h1>;
+    }
+
     return (
       <div class="catalog">
-        <h1 class="title">/{board}</h1>
+        <h1 class="title">
+          {site}/{board}
+        </h1>
         {catalog
           .slice(0, loadLimit)
-          .map(post => <Post post={post} matches={matches} preview={true}/>)}
+          .map(post => <Post post={post} matches={matches} preview={true} />)}
       </div>
     );
   }

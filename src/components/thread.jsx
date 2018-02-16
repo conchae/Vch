@@ -16,20 +16,26 @@ export default class Thread extends Component {
   }
 
   async componentDidMount() {
-    const thread = await getThread(this.props.board, this.props.number);
-    this.setState({
-      thread,
-      loadLimit: 10
-    });
+    if (this.props.site === "4" || this.props.site === "8") {
+      const thread = await getThread(this.props.site, this.props.board, this.props.number);
+      this.setState({
+        thread,
+        loadLimit: 10
+      });
 
-    addEventListener("scroll", this.scrollListener);
+      addEventListener("scroll", this.scrollListener);
+    }
   }
 
   componentWillUnmount() {
     removeEventListener("scroll", this.scrollListener);
   }
 
-  render({ matches }, { thread = [], loadLimit }) {
+  render({ site, matches }, { thread = [], loadLimit }) {
+    if (site !== "4" && site !== "8") {
+      return <h1>Site "{site}" is not supported</h1>;
+    }
+
     return (
       <div class="thread">
         {thread

@@ -19,14 +19,17 @@ export default class Post extends Component {
   }
 
   render({ post, matches, preview }, { visibile }) {
-    let title = post.title;
-    if (preview && !title) {
-      title = "View Thread";
+    let title = { __html: post.title };
+    if (preview && !post.title) {
+      title = { __html: "View Thread" };
     }
-    const idStyle = `background-color:#${post.id};color:#${post.id
-      .match(/../g)
-      .map(hex => (255 - parseInt(hex, 16)).toString(16))
-      .join("")}`;
+    let idStyle = "";
+    if (post.id) {
+      idStyle = `background-color:#${post.id};color:#${post.id
+        .match(/../g)
+        .map(hex => (255 - parseInt(hex, 16)).toString(16))
+        .join("")}`;
+    }
     const body = { __html: post.body };
     let replyText = `${post.replies.length} Replies`;
     if (!post.replies.length) {
@@ -39,9 +42,10 @@ export default class Post extends Component {
       <div class="post">
         <div class="head">
           <h1 class="title">
-            <a href={"/" + matches.site + "/" + matches.board + "/" + post.no}>
-              {title}
-            </a>
+            <a
+              href={"/" + matches.site + "/" + matches.board + "/" + post.no}
+              dangerouslySetInnerHTML={title}
+            />
           </h1>
           <div class="author">
             <span class="name">{post.author.name}</span>

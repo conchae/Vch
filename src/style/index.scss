@@ -84,44 +84,44 @@ a {
   max-height: 40vh;
 }
 
-.post .body-line {
-  margin: 0;
-}
-
-.post .body-line.heading {
+.post .heading {
   color: #af0a0f;
   font-size: 1.2em;
   font-weight: 700;
 }
 
-.post .body-line.quote {
+.post .quote {
   color: #009000;
 }
 
-.post .body-line.empty {
+.post .empty {
   height: 1.5em;
 }
 
+.post .body p {
+  margin: 0;
+}
+
 @media screen and (min-width: 00px) {
-  .post .body-line {
+  .post .body {
     font-size: 0.5em;
   }
 }
 
 @media screen and (min-width: 400px) {
-  .post .body-line {
+  .post .body {
     font-size: 0.7em;
   }
 }
 
 @media screen and (min-width: 600px) {
-  .post .body-line {
+  .post .body {
     font-size: 0.9em;
   }
 }
 
 @media screen and (min-width: 800px) {
-  .post .body-line {
+  .post .body {
     font-size: 1em;
   }
 }

@@ -3,14 +3,14 @@ const getJSON = async uri => {
   return res.json();
 };
 
-const postParser = post => {
+const postParser = (post, site, board) => {
   const base = {
     author: {
       name: post.name,
       trip: post.trip
     },
     title: post.sub,
-    body: post.com,
+    body: post.com || "",
     files: [],
     time: {
       created: new Date(post.time * 1000),
@@ -28,9 +28,16 @@ const postParser = post => {
     base.mentions = mentions.map(mention => parseInt(mention.match(/\d+/)[0]));
   }
 
+  let fileUrlBase;
+  if (site === "4") {
+    fileUrlBase = `https://i.4cdn.org/${board}/`;
+  } else if (site === "8") {
+    fileUrlBase = "https://media.8ch.net/file_store/";
+  }
+
   if (post.tim) {
     base.files.push({
-      link: `https://media.8ch.net/file_store/${post.tim}${post.ext}`,
+      link: `${fileUrlBase}${post.tim}${post.ext}`,
       name: `${post.filename}${post.ext}`,
       ext: post.ext
     });
@@ -38,7 +45,7 @@ const postParser = post => {
     if (post.extra_files) {
       post.extra_files.forEach(file => {
         base.files.push({
-          link: `https://media.8ch.net/file_store/${file.tim}${file.ext}`,
+          link: `${fileUrlBase}${post.tim}${post.ext}`,
           name: `${file.filename}${file.ext}`,
           ext: file.ext
         });
@@ -49,16 +56,28 @@ const postParser = post => {
   return base;
 };
 
-export const getCatalog = async board => {
-  const pages = await getJSON(`8ch.net/${board}/catalog.json`);
+export const getCatalog = async (site, board) => {
+  let pages;
+  if (site === "4") {
+    pages = await getJSON(`a.4cdn.org/${board}/catalog.json`);
+  } else if (site === "8") {
+    pages = await getJSON(`8ch.net/${board}/catalog.json`);
+  }
   const paginatedThreads = pages.map(page => page.threads);
+  // Flatten 2D array
   const threads = [].concat(...paginatedThreads);
-  return threads.map(postParser);
+  return threads.map(post => postParser(post, site, board));
 };
 
-export const getThread = async (board, threadID) => {
-  const { posts } = await getJSON(`8ch.net/${board}/res/${threadID}.json`);
-  const thread = posts.map(postParser);
+export const getThread = async (site, board, threadID) => {
+  let posts;
+  if (site === "4") {
+    posts = (await getJSON(`a.4cdn.org/${board}/thread/${threadID}.json`))
+      .posts;
+  } else if (site === "8") {
+    posts = (await getJSON(`8ch.net/${board}/res/${threadID}.json`)).posts;
+  }
+  const thread = posts.map(post => postParser(post, site, board));
   const hash = {};
   thread.forEach(post => (hash[post.no] = post));
 
