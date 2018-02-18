@@ -19,7 +19,7 @@ export default class File extends Component {
       case ".jpeg":
       case ".gif":
         const url = new URL(file.link);
-        return <img class="file" src={`https://i.scaley.io/https/${url.host}/${url.pathname}`} alt={file.name} />;
+        return <img class="file" src={`https://i.scaley.io/https/${url.host}${url.pathname}`} alt={file.name} />;
         break;
       default:
         return (

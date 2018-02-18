@@ -45,7 +45,7 @@ const postParser = (post, site, board) => {
     if (post.extra_files) {
       post.extra_files.forEach(file => {
         base.files.push({
-          link: `${fileUrlBase}${post.tim}${post.ext}`,
+          link: `${fileUrlBase}${file.tim}${file.ext}`,
           name: `${file.filename}${file.ext}`,
           ext: file.ext
         });
