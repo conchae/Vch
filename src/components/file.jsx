@@ -18,8 +18,13 @@ export default class File extends Component {
       case ".jpg":
       case ".jpeg":
       case ".gif":
-        const url = new URL(file.link);
-        return <img class="file" src={`https://i.scaley.io/https/${url.host}${url.pathname}`} alt={file.name} />;
+        return (
+          <img
+            class="file"
+            src={`https://res.cloudinary.com/vwuo/image/fetch/${file.link}`}
+            alt={file.name}
+          />
+        );
         break;
       default:
         return (
