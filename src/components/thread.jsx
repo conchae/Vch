@@ -9,7 +9,7 @@ export default class Thread extends Component {
     this.scrollListener = () => {
       if (innerHeight + scrollY >= document.body.offsetHeight) {
         this.setState((prevState, props) => ({
-          loadLimit: prevState.loadLimit + 10
+          loadLimit: prevState.loadLimit + 100
         }));
       }
     };
@@ -20,7 +20,7 @@ export default class Thread extends Component {
       const thread = await getThread(this.props.site, this.props.board, this.props.number);
       this.setState({
         thread,
-        loadLimit: 10
+        loadLimit: 100
       });
 
       addEventListener("scroll", this.scrollListener);

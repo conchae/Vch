@@ -7,18 +7,18 @@ export default class Post extends Component {
 
     this.toggleReplies = () => {
       this.setState((prevState, props) => ({
-        visibile: !prevState.visibile
+        repliesVisible: !prevState.repliesVisible
       }));
     };
   }
 
   componentDidMount() {
     this.setState({
-      visibile: false
+      repliesVisible: false
     });
   }
 
-  render({ post, matches, preview }, { visibile }) {
+  render({ post, matches, preview }, { repliesVisible }) {
     let title = { __html: post.title };
     if (preview && !post.title) {
       title = { __html: "View Thread" };
@@ -31,11 +31,17 @@ export default class Post extends Component {
         .join("")}`;
     }
     const body = { __html: post.body };
+
     let replyText = `${post.replies.length} Replies`;
     if (!post.replies.length) {
       replyText = "No Replies";
     } else if (post.replies.length === 1) {
       replyText = "1 Reply";
+    }
+
+    let replies = <div />;
+    if (repliesVisible) {
+      replies = post.replies.map(post => <Post post={post} matches={matches} />)
     }
 
     return (
@@ -65,8 +71,8 @@ export default class Post extends Component {
         <a class="replies-toggle" onClick={this.toggleReplies}>
           {replyText}
         </a>
-        <div class="replies" style={`display:${visibile ? "block" : "none"}`}>
-          {post.replies.map(post => <Post post={post} matches={matches} />)}
+        <div class="replies">
+          {replies}
         </div>
       </div>
     );
