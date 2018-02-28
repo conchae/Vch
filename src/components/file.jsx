@@ -18,10 +18,11 @@ export default class File extends Component {
       case ".jpg":
       case ".jpeg":
       case ".gif":
+        const url = new URL(file.link);
         return (
           <img
             class="file"
-            src={`https://res.cloudinary.com/vwuo/image/fetch/${file.link}`}
+            src={`https://rsz.io/${url.host}${url.pathname}`}
             alt={file.name}
           />
         );
