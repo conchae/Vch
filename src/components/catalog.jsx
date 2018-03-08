@@ -1,5 +1,5 @@
 import { Component, h } from "preact";
-import { getCatalog, getThread } from "../api";
+import { getCatalog } from "../api";
 import Post from "./post";
 
 export default class Catalog extends Component {

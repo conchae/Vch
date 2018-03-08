@@ -77,27 +77,27 @@ export const getThread = async (site, board, threadID) => {
   } else if (site === "8") {
     posts = (await getJSON(`8ch.net/${board}/res/${threadID}.json`)).posts;
   }
+  // Map the json to an array of parsed posts
   const thread = posts.map(post => postParser(post, site, board));
+  // Make an object that holds the parsed posts, post numbers being the keys
   const hash = {};
   thread.forEach(post => (hash[post.no] = post));
 
   // Iterate through all posts in the thread.
   // If a post is a reply to any other posts in this thread,
-  // move it to the posts it replies to, then remove from the top thread level.
+  // move it to the posts it replies to.
   thread.forEach((post, i) => {
-    let isReply = false;
-
     post.mentions.forEach(mention => {
       if (mention in hash) {
         hash[mention].replies.push(post);
-        isReply = true;
       }
     });
-
-    if (isReply) {
-      delete thread[i];
-    }
   });
 
-  return thread.filter(post => post !== undefined);
+  return {
+    // Displays all posts on the top level
+    chronological: thread,
+    // Displays only the OP, and non-reply posts at the top level
+    hierarchical: thread.filter(post => !post.replies.length)
+  };
 };

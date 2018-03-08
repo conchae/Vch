@@ -15,7 +15,7 @@ export default class App extends Component {
         <Home path="/" />
         <Site path="/:site" />
         <Catalog path="/:site/:board" />
-        <Thread path="/:site/:board/:number" />
+        <Thread path="/:site/:board/:number/:scrollToPost?" />
       </Router>
     );
   }

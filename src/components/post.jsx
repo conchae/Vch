@@ -25,10 +25,22 @@ export default class Post extends Component {
     }
     let idStyle = "";
     if (post.id) {
-      idStyle = `background-color:#${post.id};color:#${post.id
-        .match(/../g)
-        .map(hex => (255 - parseInt(hex, 16)).toString(16))
-        .join("")}`;
+      function readableColour($bg) {
+        const r = parseInt($bg.substr(0, 2), 16);
+        const g = parseInt($bg.substr(2, 2), 16);
+        const b = parseInt($bg.substr(4, 2), 16);
+        const contrast = Math.sqrt(
+          r * r * 0.241 + g * g * 0.691 + b * b * 0.068
+        );
+        if (contrast > 130) {
+          return "000000";
+        } else {
+          return "FFFFFF";
+        }
+      }
+      idStyle = `background-color:#${post.id};color:#${readableColour(
+        post.id
+      )}`;
     }
     const body = { __html: post.body };
 
@@ -41,7 +53,9 @@ export default class Post extends Component {
 
     let replies = <div />;
     if (repliesVisible) {
-      replies = post.replies.map(post => <Post post={post} matches={matches} />)
+      replies = post.replies.map(post => (
+        <Post post={post} matches={matches} />
+      ));
     }
 
     return (
@@ -71,9 +85,7 @@ export default class Post extends Component {
         <a class="replies-toggle" onClick={this.toggleReplies}>
           {replyText}
         </a>
-        <div class="replies">
-          {replies}
-        </div>
+        <div class="replies">{replies}</div>
       </div>
     );
   }
