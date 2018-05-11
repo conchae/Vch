@@ -1,17 +1,30 @@
 import { Component, h } from "preact";
 
+
 export default class File extends Component {
   render({ file }) {
     switch (file.ext.toLowerCase()) {
       case ".webm":
       case ".mp4":
         return (
-          <video class="file" src={file.link} alt={file.name} controls="true" />
+          <video
+            class="file-constrained"
+            onClick={(e) => e.target.classList.toggle("file-constrained")}
+            src={file.link}
+            alt={file.name}
+            controls="true"
+          />
         );
         break;
       case ".mp3":
         return (
-          <audio class="file" src={file.link} alt={file.name} controls="true" />
+          <audio
+            class="file-constrained"
+            onClick={(e) => e.target.classList.toggle("file-constrained")}
+            src={file.link}
+            alt={file.name}
+            controls="true"
+          />
         );
         break;
       case ".png":
@@ -21,7 +34,8 @@ export default class File extends Component {
         const url = new URL(file.link);
         return (
           <img
-            class="file"
+            class="file-constrained"
+            onClick={(e) => e.target.classList.toggle("file-constrained")}
             src={`https://rsz.io/${url.host}${url.pathname}`}
             alt={file.name}
           />
@@ -29,7 +43,11 @@ export default class File extends Component {
         break;
       default:
         return (
-          <a class="file" href={file.link}>
+          <a
+            class="file-constrained"
+            onClick={(e) => e.target.classList.toggle("file-constrained")}
+            href={file.link}
+          >
             {file.name}
           </a>
         );

@@ -13,24 +13,17 @@ export default class Thread extends Component {
         }));
       }
     };
-
-    this.toggleView = () => {
-      this.setState((prevState, props) => ({
-        viewChrono: !prevState.viewChrono
-      }));
-    };
   }
 
   async componentDidMount() {
     if (this.props.site === "4" || this.props.site === "8") {
-      const { chronological, hierarchical } = await getThread(
+      const thread = await getThread(
         this.props.site,
         this.props.board,
         this.props.number
       );
       this.setState({
-        chronological,
-        hierarchical,
+        thread,
         loadLimit: 100
       });
 
@@ -42,23 +35,14 @@ export default class Thread extends Component {
     removeEventListener("scroll", this.scrollListener);
   }
 
-  render(
-    { site, matches },
-    { chronological = [], hierarchical = [], viewChrono = true, loadLimit }
-  ) {
+  render({ site, matches }, { thread = [], loadLimit }) {
     if (site !== "4" && site !== "8") {
       return <h1>Site "{site}" is not supported</h1>;
     }
 
     return (
       <div class="thread">
-        <div style="position:fixed;right:1em;background-color:#171717">
-          <a onClick={this.toggleView}>
-            {viewChrono ? "View Hierarchically" : "View Chronologically"}
-          </a>
-        </div>
-
-        {(viewChrono ? chronological : hierarchical)
+        {thread
           .slice(0, loadLimit)
           .map(post => <Post post={post} matches={matches} />)}
       </div>

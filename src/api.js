@@ -94,10 +94,5 @@ export const getThread = async (site, board, threadID) => {
     });
   });
 
-  return {
-    // Displays all posts on the top level
-    chronological: thread,
-    // Displays only the OP, and non-reply posts at the top level
-    hierarchical: thread.filter(post => !post.replies.length)
-  };
+  return thread;
 };
