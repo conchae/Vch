@@ -31,12 +31,11 @@ export default class File extends Component {
       case ".jpg":
       case ".jpeg":
       case ".gif":
-        const url = new URL(file.link);
         return (
           <img
             class="file-constrained"
             onClick={(e) => e.target.classList.toggle("file-constrained")}
-            src={`https://rsz.io/${url.host}${url.pathname}`}
+            src={file.link}
             alt={file.name}
           />
         );
