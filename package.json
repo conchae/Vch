@@ -1,9 +1,9 @@
 {
-  "name": "vch",
-  "description": "ViewCh",
+  "name": "viewq",
+  "description": "View Q Anon's Posts",
   "version": "0.0.0",
-  "author": "Daniel Ethridge <danielethridge@icloud.com>",
-  "license": "MIT",
+  "author": "Conchae",
+  "license": "Unlicense",
   "dependencies": {
     "preact": "8.2.5",
     "preact-router": "^2.6.0"
