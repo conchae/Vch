@@ -1,98 +1,187 @@
 const getJSON = async uri => {
-  const res = await fetch(`https://cors-anywhere.herokuapp.com/${uri}`);
-  return res.json();
+  const res = await fetch(uri);
+  if (res.ok) {
+    return res.json();
+  } else {
+    throw new Error(`Failed to fetch ${uri}`);
+  }
 };
 
-const postParser = (post, site, board) => {
-  const base = {
-    author: {
+class ParsedPost {
+  constructor() {
+    this.author = {
+      name: "",
+      trip: "",
+      id: ""
+    };
+    this.meta = {
+      threadID: undefined,
+      no: undefined,
+      link: "",
+      time: undefined
+    };
+    this.files = [];
+    this.title = "";
+    this.body = "";
+    this.mentions = [];
+  }
+}
+
+class LiveParsedPost extends ParsedPost {
+  constructor(board, threadID, post) {
+    super();
+
+    this.author = {
       name: post.name,
-      trip: post.trip
-    },
-    title: post.sub,
-    body: post.com || "",
-    files: [],
-    time: {
-      created: new Date(post.time * 1000),
-      modified: new Date(post.last_modified * 1000)
-    },
-    mentions: [],
-    replies: [],
-    no: post.no,
-    id: post.id
-  };
+      trip: post.trip,
+      id: post.id
+    };
+    this.meta = {
+      threadID: threadID,
+      no: post.no,
+      link: `https://8ch.net/${board}/res/${threadID}.html#${post.no}`,
+      time: new Date(post.time * 1000)
+    };
+    this.title = post.sub;
+    this.body = post.com;
 
-  // All unique mentions
-  const mentions = [...new Set(base.body.match(/&gt;&gt;\d+/gi))];
-  if (mentions) {
-    base.mentions = mentions.map(mention => parseInt(mention.match(/\d+/)[0]));
-  }
-
-  let fileUrlBase;
-  if (site === "4") {
-    fileUrlBase = `https://i.4cdn.org/${board}/`;
-  } else if (site === "8") {
-    fileUrlBase = "https://media.8ch.net/file_store/";
-  }
-
-  if (post.tim) {
-    base.files.push({
-      link: `${fileUrlBase}${post.tim}${post.ext}`,
-      name: `${post.filename}${post.ext}`,
-      ext: post.ext
-    });
-
-    if (post.extra_files) {
-      post.extra_files.forEach(file => {
-        base.files.push({
-          link: `${fileUrlBase}${file.tim}${file.ext}`,
-          name: `${file.filename}${file.ext}`,
-          ext: file.ext
-        });
+    // Add in all of the attached files
+    let fileUrlBase = "https://media.8ch.net/file_store/";
+    if (post.tim) {
+      this.files.push({
+        preview: `${fileUrlBase}thumb/${post.tim}${post.ext}`,
+        link: `${fileUrlBase}${post.tim}${post.ext}`,
+        name: `${post.filename}${post.ext}`
       });
+
+      if (post.extra_files) {
+        post.extra_files.forEach(file => {
+          this.files.push({
+            preview: `${fileUrlBase}thumb/${post.tim}${post.ext}`,
+            link: `${fileUrlBase}${file.tim}${file.ext}`,
+            name: `${file.filename}${file.ext}`
+          });
+        });
+      }
     }
   }
+}
 
-  return base;
+class ArchivedParsedPost extends ParsedPost {
+  constructor(post, isAMention) {
+    super();
+
+    this.author = {
+      name: post.name,
+      trip: post.trip,
+      id: post.userId
+    };
+    this.meta = {
+      threadID: post.threadId,
+      no: post.id,
+      link: post.link,
+      time: new Date(post.timestamp * 1000)
+    };
+    if (post.images) {
+      this.files = post.images.map(file => {
+        const link = `https://qanon.pub/data/images/${
+          file.url.split("/").slice(-1)[0]
+        }`;
+        return {
+          preview: link,
+          link: link,
+          name: file.filename
+        };
+      });
+    }
+    this.title = post.subject || post.title;
+    if (post.text) {
+      this.body = post.text.replace(/\n/g, "<br>");
+    }
+    if (post.references && !isAMention) {
+      this.mentions = post.references.map(
+        mention => new ArchivedParsedPost(mention, true)
+      );
+    }
+  }
+}
+
+const getThreadIds = async (board, limit = Infinity) => {
+  const pages = await getJSON(`https://8ch.net/${board}/threads.json`);
+  return pages
+    .reduce((accumulator, page) => accumulator.concat(page.threads), [])
+    .slice(0, limit)
+    .map(thread => thread.no);
 };
 
-export const getCatalog = async (site, board) => {
-  let pages;
-  if (site === "4") {
-    pages = await getJSON(`a.4cdn.org/${board}/catalog.json`);
-  } else if (site === "8") {
-    pages = await getJSON(`8ch.net/${board}/catalog.json`);
+const findQPostsInThread = async (board, threadID, qTripcode) => {
+  let postsArray;
+  try {
+    const response = await getJSON(
+      `https://8ch.net/${board}/res/${threadID}.json`
+    );
+    postsArray = response.posts;
+  } catch (err) {
+    console.warn(
+      `We couldn't get thread #${threadID} on ${board}, so we won't be scanning it.`,
+      err
+    );
+    return [];
   }
-  const paginatedThreads = pages.map(page => page.threads);
-  // Flatten 2D array
-  const threads = [].concat(...paginatedThreads);
-  return threads.map(post => postParser(post, site, board));
-};
 
-export const getThread = async (site, board, threadID) => {
-  let posts;
-  if (site === "4") {
-    posts = (await getJSON(`a.4cdn.org/${board}/thread/${threadID}.json`))
-      .posts;
-  } else if (site === "8") {
-    posts = (await getJSON(`8ch.net/${board}/res/${threadID}.json`)).posts;
-  }
-  // Map the json to an array of parsed posts
-  const thread = posts.map(post => postParser(post, site, board));
-  // Make an object that holds the parsed posts, post numbers being the keys
-  const hash = {};
-  thread.forEach(post => (hash[post.no] = post));
+  // Make an object that holds all of the thread's posts, post numbers being the keys
+  // This makes it easy to find replies later on
+  let postsObject = {};
+  postsArray.forEach(post => (postsObject[post.no] = post));
 
-  // Iterate through all posts in the thread.
-  // If a post is a reply to any other posts in this thread,
-  // move it to the posts it replies to.
-  thread.forEach((post, i) => {
-    post.mentions.forEach(mention => {
-      if (mention in hash) {
-        hash[mention].replies.push(post);
+  // Get all the Q posts in this thread, and parse them
+  let qPosts = postsArray
+    .filter(post => post.trip === qTripcode)
+    .map(post => new LiveParsedPost(board, threadID, post));
+
+  // Check if Q is mentioning/replying to any other posts in this thread
+  qPosts.forEach((post, i) => {
+    // All unique mentions
+    const mentionIds = [...new Set(post.body.match(/&gt;&gt;\d+/gi))].map(id =>
+      parseInt(id.match(/\d+/)[0])
+    );
+    mentionIds.forEach(id => {
+      if (id in postsObject) {
+        const mention = new LiveParsedPost(board, threadID, postsObject[id]);
+        post.mentions.push(mention);
       }
     });
   });
 
-  return thread;
+  return qPosts;
+};
+
+export const findNewQPosts = async (boards, qTripcode) => {
+  let posts = [];
+  // Get all of the threads from the catalog of each board,
+  // then search each thread for Q posts.
+  await Promise.all(
+    boards.map(async board => {
+      const threads = await getThreadIds(board, 15);
+      await Promise.all(
+        threads.map(async threadID => {
+          const postsInThisThread = await findQPostsInThread(
+            board,
+            threadID,
+            qTripcode
+          );
+          // Add any posts found in this thread
+          posts.push(...postsInThisThread);
+        })
+      );
+    })
+  );
+
+  // Unsorted
+  return posts;
+};
+
+export const getArchivedQPosts = async () => {
+  const posts = await getJSON("https://qanon.pub/data/json/posts.json");
+  return posts.map(post => new ArchivedParsedPost(post));
 };
