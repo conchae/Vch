@@ -1,6 +1,7 @@
 import { Component, h } from "preact";
 import { findNewQPosts, getArchivedQPosts } from "../api";
 import Post from "./post";
+import settings from "../settings";
 
 export default class Posts extends Component {
   constructor(props) {
@@ -16,9 +17,8 @@ export default class Posts extends Component {
     };
 
     this.switchOrder = () => {
-      this.setState((prevState, props) => ({
-        orderDesc: !prevState.orderDesc
-      }));
+      settings.orderAsc = !settings.orderAsc;
+      this.forceUpdate();
     };
 
     this.scan = async () => {
@@ -37,8 +37,7 @@ export default class Posts extends Component {
 
     this.setState({
       qPosts,
-      loadLimit: 50,
-      orderDesc: true
+      loadLimit: 50
     });
 
     addEventListener("scroll", this.scrollListener);
@@ -50,17 +49,19 @@ export default class Posts extends Component {
     removeEventListener("scroll", this.scrollListener);
   }
 
-  render({}, { qPosts = [], loadLimit, orderDesc }) {
+  render({}, { qPosts = [], loadLimit }) {
     let sortFunction;
-    if (orderDesc) {
-      sortFunction = (a, b) => b.meta.time - a.meta.time;
-    } else {
+    if (settings.orderAsc) {
       sortFunction = (a, b) => a.meta.time - b.meta.time;
+    } else {
+      sortFunction = (a, b) => b.meta.time - a.meta.time;
     }
 
     return (
       <div class="posts">
-        <a onClick={this.switchOrder}>{orderDesc ? "\u2191" : "\u2193"}</a>
+        <a onClick={this.switchOrder}>
+          {settings.orderAsc ? "\u2193" : "\u2191"}
+        </a>
         {qPosts
           .sort(sortFunction)
           .slice(0, loadLimit)

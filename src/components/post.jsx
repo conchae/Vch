@@ -1,10 +1,12 @@
 import { Component, h } from "preact";
 import File from "./file";
 
-function readableColour($bg) {
-  const r = parseInt($bg.substr(0, 2), 16);
-  const g = parseInt($bg.substr(2, 2), 16);
-  const b = parseInt($bg.substr(4, 2), 16);
+const isHexColor = color => /(^[0-9A-F]{6}$)|(^[0-9A-F]{3}$)/i.test(color);
+
+function textColor(bg) {
+  const r = parseInt(bg.substr(0, 2), 16);
+  const g = parseInt(bg.substr(2, 2), 16);
+  const b = parseInt(bg.substr(4, 2), 16);
   const contrast = Math.sqrt(r * r * 0.241 + g * g * 0.691 + b * b * 0.068);
   if (contrast > 130) {
     return "000000";
@@ -16,9 +18,9 @@ function readableColour($bg) {
 export default class Post extends Component {
   render({ post }) {
     // Determines the text color and it's background color for Id's
-    let idStyle = "";
-    if (post.author.id) {
-      idStyle = `background-color:#${post.author.id};color:#${readableColour(
+    let idStyle = "background-color:#737373;color:#FFFFFF";
+    if (post.author.id && isHexColor(post.author.id)) {
+      idStyle = `background-color:#${post.author.id};color:#${textColor(
         post.author.id
       )}`;
     }
@@ -35,7 +37,7 @@ export default class Post extends Component {
             <span class="name">{post.author.name}</span>
             <span class="trip">{post.author.trip || ""} </span>
             <span class="id" style={idStyle}>
-              id:{post.author.id || ""}
+              {post.author.id ? "id:" + post.author.id : ""}
             </span>
           </div>
           <div class="meta">

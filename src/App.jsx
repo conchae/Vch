@@ -3,6 +3,7 @@ import { Component, h } from "preact";
 import Router from "preact-router";
 
 import Posts from "./components/posts";
+import settings from "./settings";
 
 export default class App extends Component {
   render(props, state) {
@@ -10,8 +11,8 @@ export default class App extends Component {
       <Router>
         <Posts
           path="/"
-          boards={["qresearch", "patriotsfight"]}
-          qTripcode="!CbboFOtcZs"
+          boards={settings.boards}
+          qTripcode={settings.qTripcode}
         />
       </Router>
     );

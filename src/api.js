@@ -7,6 +7,40 @@ const getJSON = async uri => {
   }
 };
 
+function format(text) {
+  return text
+    .split("\n")
+    .map(line => {
+      let p = "<p>";
+
+      if (line === "") {
+        return `<p class="empty"></p>`;
+      }
+
+      // These detect if the line itself is a quote
+      if (/^>[^>].+$/.test(line)) {
+        p = `<p class="quote">`;
+      } else if (/(?!^<.+>)^<.+$/.test(line)) {
+        p = `<p class="rquote">`;
+      }
+
+      line = line
+        .replace(/\>\>\d+/g, match => `<a>${match}</a>`)
+        .replace(/(\[+[^[]+])/g, match => `<strong>${match}</strong>`)
+        // 8ch specific, fixes broken urls
+        .replace(/\:(\/\/\s|\<em\>\/\/\<\/em\>)/g, "://")
+        // Linkify urls
+        .replace(
+          /(https?:\/\/[.\w\/?\-_.~!*'();:@&=+$,/?%#–—]+)/g,
+          match =>
+            `<a href="${match}" target="_blank" rel="noopener noreferrer">${match}</a>`
+        );
+
+      return p + line + "</p>";
+    })
+    .join("");
+}
+
 class ParsedPost {
   constructor() {
     this.author = {
@@ -96,7 +130,7 @@ class ArchivedParsedPost extends ParsedPost {
     }
     this.title = post.subject || post.title;
     if (post.text) {
-      this.body = post.text.replace(/\n/g, "<br>");
+      this.body = format(post.text);
     }
     if (post.references && !isAMention) {
       this.mentions = post.references.map(
