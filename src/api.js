@@ -190,7 +190,7 @@ const findQPostsInThread = async (board, threadID, qTripcode) => {
   return qPosts;
 };
 
-export const findNewQPosts = async (boards, qTripcode) => {
+export const findQPosts = async (boards, qTripcode) => {
   let posts = [];
   // Get all of the threads from the catalog of each board,
   // then search each thread for Q posts.

@@ -1,5 +1,5 @@
 import { Component, h } from "preact";
-import { findNewQPosts, getArchivedQPosts } from "../api";
+import { findQPosts, getArchivedQPosts } from "../api";
 import Post from "./post";
 import settings from "../settings";
 
@@ -21,14 +21,25 @@ export default class Posts extends Component {
       this.forceUpdate();
     };
 
+    // Scan the threads for all Q posts,
+    // filter out any posts that were already found, and add them
     this.scan = async () => {
-      const newQPosts = await findNewQPosts(
+      const foundQPosts = await findQPosts(
         this.props.boards,
         this.props.qTripcode
       );
-      this.setState((prevState, props) => ({
-        qPosts: prevState.qPosts.concat(newQPosts)
-      }));
+
+      this.setState((prevState, props) => {
+        const alreadyRecievedPostLinks = prevState.qPosts.map(
+          post => post.meta.link
+        );
+        const newQPosts = foundQPosts.filter(
+          post => !alreadyRecievedPostLinks.includes(post.meta.link)
+        );
+        return {
+          qPosts: prevState.qPosts.concat(newQPosts)
+        };
+      });
     };
   }
 
