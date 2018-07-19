@@ -116,9 +116,9 @@ class ArchivedParsedPost extends ParsedPost {
       link: post.link,
       time: new Date(post.timestamp * 1000)
     };
-    if (post.images) {
-      this.files = post.images.map(file => {
-        const link = `https://qanon.pub/data/images/${
+    if (post.media) {
+      this.files = post.media.map(file => {
+        const link = `https://qanon.pub/data/media/${
           file.url.split("/").slice(-1)[0]
         }`;
         return {
