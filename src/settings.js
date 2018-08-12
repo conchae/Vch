@@ -19,7 +19,7 @@ export default new class Settings {
   }
 
   get qTripcode() {
-    return persistGet("qTripcode") || "!CbboFOtcZs";
+    return persistGet("qTripcode") || "!A6yxsPKia.";
   }
 
   set qTripcode(value) {
