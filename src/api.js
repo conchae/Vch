@@ -118,7 +118,7 @@ class ArchivedParsedPost extends ParsedPost {
     };
     if (post.media) {
       this.files = post.media.map(file => {
-        const link = `https://qanon.pub/data/media/${
+        const link = `https://qanon.app/data/media/${
           file.url.split("/").slice(-1)[0]
         }`;
         return {
@@ -216,6 +216,6 @@ export const findQPosts = async (boards, qTripcode) => {
 };
 
 export const getArchivedQPosts = async () => {
-  const posts = await getJSON("https://qanon.pub/data/json/posts.json");
+  const posts = await getJSON("https://qanon.app/data/json/posts.json");
   return posts.map(post => new ArchivedParsedPost(post));
 };
